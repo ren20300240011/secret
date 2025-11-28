@@ -245,14 +245,26 @@ def upload_files():
             'message': '只支持 PDF、PNG、JPG、JPEG 格式'
         }), 400
     
-    # 生成安全的文件名
-    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-    bank_filename = secure_filename(f"{session_id}_{role}_bank_{timestamp}_{bank_file.filename}")
-    commitment_filename = secure_filename(f"{session_id}_{role}_commitment_{timestamp}_{commitment_file.filename}")
+    # 获取公司名称
+    session = sessions[session_id]
+    company = session[role]
+    company_name = company.get('name', '未命名公司')
     
-    # 保存文件
-    bank_path = os.path.join(app.config['UPLOAD_FOLDER'], bank_filename)
-    commitment_path = os.path.join(app.config['UPLOAD_FOLDER'], commitment_filename)
+    # 创建会话专属文件夹
+    session_folder = os.path.join(DATA_FOLDER, session_id)
+    os.makedirs(session_folder, exist_ok=True)
+    
+    # 获取文件扩展名
+    bank_ext = os.path.splitext(bank_file.filename)[1]
+    commitment_ext = os.path.splitext(commitment_file.filename)[1]
+    
+    # 生成清晰的文件名：公司名_文件类型.扩展名
+    bank_filename = secure_filename(f"{company_name}_银行流水{bank_ext}")
+    commitment_filename = secure_filename(f"{company_name}_承诺书{commitment_ext}")
+    
+    # 保存文件到会话文件夹
+    bank_path = os.path.join(session_folder, bank_filename)
+    commitment_path = os.path.join(session_folder, commitment_filename)
     
     bank_file.save(bank_path)
     commitment_file.save(commitment_path)
