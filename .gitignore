@@ -27,6 +27,10 @@ wheels/
 instance/
 .webassets-cache
 
+# Data files
+data/
+uploads/
+
 # IDE
 .vscode/
 .idea/

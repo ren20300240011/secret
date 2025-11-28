@@ -12,21 +12,102 @@ CORS(app)
 
 # 文件上传配置
 UPLOAD_FOLDER = 'uploads'
+DATA_FOLDER = 'data'  # 存储会话数据
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
 
-# 确保上传文件夹存在
+# 确保文件夹存在
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(DATA_FOLDER, exist_ok=True)
 
-# 存储会话数据（实际应用中应使用数据库）
+# 存储会话数据（现在会持久化到文件）
 sessions = {}
 
 def allowed_file(filename):
     """检查文件扩展名是否允许"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def save_session_to_file(session_id, session_data):
+    """保存会话数据到JSON文件"""
+    try:
+        # 创建会话专属文件夹
+        session_folder = os.path.join(DATA_FOLDER, session_id)
+        os.makedirs(session_folder, exist_ok=True)
+        
+        # 保存会话信息
+        session_file = os.path.join(session_folder, 'session.json')
+        
+        # 准备要保存的数据（排除不能序列化的字段）
+        save_data = {
+            'session_id': session_data.get('session_id'),
+            'created_at': session_data.get('created_at'),
+            'status': session_data.get('status'),
+            'company_a': {
+                'name': session_data['company_a'].get('name'),
+                'committed': session_data['company_a'].get('committed', False),
+                'level': session_data['company_a'].get('level'),
+                'bank_statement': session_data['company_a'].get('bank_statement'),
+                'commitment_letter': session_data['company_a'].get('commitment_letter'),
+                'files_uploaded': session_data['company_a'].get('files_uploaded', False),
+                'level_info': session_data['company_a'].get('level_info')
+            },
+            'company_b': {
+                'name': session_data['company_b'].get('name'),
+                'committed': session_data['company_b'].get('committed', False),
+                'level': session_data['company_b'].get('level'),
+                'bank_statement': session_data['company_b'].get('bank_statement'),
+                'commitment_letter': session_data['company_b'].get('commitment_letter'),
+                'files_uploaded': session_data['company_b'].get('files_uploaded', False),
+                'level_info': session_data['company_b'].get('level_info')
+            },
+            'result': session_data.get('result')
+        }
+        
+        with open(session_file, 'w', encoding='utf-8') as f:
+            json.dump(save_data, f, ensure_ascii=False, indent=2)
+        
+        print(f"✅ 会话已保存: {session_id}")
+        return True
+    except Exception as e:
+        print(f"❌ 保存会话失败: {e}")
+        return False
+
+def load_session_from_file(session_id):
+    """从文件加载会话数据"""
+    try:
+        session_file = os.path.join(DATA_FOLDER, session_id, 'session.json')
+        if os.path.exists(session_file):
+            with open(session_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        return None
+    except Exception as e:
+        print(f"❌ 加载会话失败: {e}")
+        return None
+
+def load_all_sessions():
+    """启动时加载所有保存的会话"""
+    try:
+        if not os.path.exists(DATA_FOLDER):
+            return
+        
+        count = 0
+        for session_id in os.listdir(DATA_FOLDER):
+            session_folder = os.path.join(DATA_FOLDER, session_id)
+            if os.path.isdir(session_folder):
+                session_data = load_session_from_file(session_id)
+                if session_data:
+                    sessions[session_id] = session_data
+                    count += 1
+        
+        print(f"✅ 已加载 {count} 个历史会话")
+    except Exception as e:
+        print(f"❌ 加载历史会话失败: {e}")
+
+# 启动时加载历史会话
+load_all_sessions()
 
 # 流水档次定义
 LEVELS = [
@@ -87,6 +168,9 @@ def create_session():
         'result': None
     }
     
+    # 保存会话到文件
+    save_session_to_file(session_id, sessions[session_id])
+    
     return jsonify({
         'success': True,
         'session_id': session_id,
@@ -115,6 +199,9 @@ def join_session():
         }), 400
     
     session['company_b']['name'] = company_name
+    
+    # 保存会话到文件
+    save_session_to_file(session_id, session)
     
     return jsonify({
         'success': True,
@@ -177,6 +264,9 @@ def upload_files():
     company['commitment_letter'] = commitment_filename
     company['files_uploaded'] = True
     
+    # 保存会话到文件
+    save_session_to_file(session_id, session)
+    
     return jsonify({
         'success': True,
         'message': '文件上传成功',
@@ -231,6 +321,9 @@ def commit():
     # 检查双方是否都已提交
     if session['company_a']['committed'] and session['company_b']['committed']:
         session['status'] = 'both_committed'
+    
+    # 保存会话到文件
+    save_session_to_file(session_id, session)
     
     return jsonify({
         'success': True,
@@ -312,6 +405,9 @@ def reveal():
     session['status'] = 'revealed'
     session['result'] = result
     
+    # 保存会话到文件
+    save_session_to_file(session_id, session)
+    
     return jsonify({
         'success': True,
         'result': result
@@ -345,6 +441,79 @@ def get_levels():
         'success': True,
         'levels': LEVELS
     })
+
+@app.route('/api/history', methods=['GET'])
+def get_history():
+    """获取所有历史会话记录"""
+    try:
+        history = []
+        for session_id, session_data in sessions.items():
+            if session_data.get('status') == 'revealed' and session_data.get('result'):
+                history.append({
+                    'session_id': session_id,
+                    'created_at': session_data.get('created_at'),
+                    'company_a_name': session_data['company_a'].get('name'),
+                    'company_b_name': session_data['company_b'].get('name'),
+                    'result': session_data.get('result')
+                })
+        
+        # 按创建时间倒序排列
+        history.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+        
+        return jsonify({
+            'success': True,
+            'count': len(history),
+            'history': history
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+@app.route('/api/export/<session_id>', methods=['GET'])
+def export_session(session_id):
+    """导出指定会话的完整数据"""
+    if session_id not in sessions:
+        return jsonify({
+            'success': False,
+            'message': '会话不存在'
+        }), 404
+    
+    try:
+        session_data = sessions[session_id]
+        export_data = {
+            'session_id': session_id,
+            'created_at': session_data.get('created_at'),
+            'status': session_data.get('status'),
+            'company_a': {
+                'name': session_data['company_a'].get('name'),
+                'level': session_data['company_a'].get('level_info'),
+                'files': {
+                    'bank_statement': session_data['company_a'].get('bank_statement'),
+                    'commitment_letter': session_data['company_a'].get('commitment_letter')
+                }
+            },
+            'company_b': {
+                'name': session_data['company_b'].get('name'),
+                'level': session_data['company_b'].get('level_info'),
+                'files': {
+                    'bank_statement': session_data['company_b'].get('bank_statement'),
+                    'commitment_letter': session_data['company_b'].get('commitment_letter')
+                }
+            },
+            'result': session_data.get('result')
+        }
+        
+        return jsonify({
+            'success': True,
+            'data': export_data
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
