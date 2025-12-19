@@ -1,0 +1,23 @@
+# 自动处理换行符
+* text=auto
+
+# Shell 脚本必须保持 LF 格式（Linux/Mac 兼容）
+*.sh text eol=lf
+
+# Windows 批处理保持 CRLF 格式
+*.bat text eol=crlf
+
+# Python 文件使用 LF
+*.py text eol=lf
+
+# JavaScript/CSS/HTML 使用 LF
+*.js text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+
+# Markdown 使用 LF
+*.md text eol=lf
+
+# JSON 使用 LF
+*.json text eol=lf
+

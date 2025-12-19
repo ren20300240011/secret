@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Orchestrator - 企业合作风险评估系统</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏢 Risk Orchestrator</h1>
+            <p class="subtitle">企业合作风险与信任评估系统 - 基于安全多方计算的私密能力验证</p>
+        </header>
+
+        <!-- 模块选择入口 -->
+        <div class="module-nav">
+            <a href="/" class="module-link active">
+                <span class="module-icon">🔒</span>
+                <span>MPC 私密验证</span>
+            </a>
+            <a href="/edr" class="module-link">
+                <span class="module-icon">📡</span>
+                <span>EDR 公开信息分析</span>
+            </a>
+        </div>
+
+        <div class="info-section">
+            <div class="info-card">
+                <h3>🔒 私密能力验证 (MPC)</h3>
+                <p>基于"百万富翁问题"的密码学应用。两家公司可以在<strong>不泄漏具体流水金额</strong>的情况下，比较彼此的信用档次，验证对方的企业能力。</p>
+            </div>
+            
+            <div class="info-card">
+                <h3>📊 信用档次划分</h3>
+                <div class="levels-grid">
+                    <div class="level-item level-1">
+                        <div class="level-badge">初创级</div>
+                        <div class="level-range">10万 - 100万</div>
+                    </div>
+                    <div class="level-item level-2">
+                        <div class="level-badge">成长级</div>
+                        <div class="level-range">100万 - 1000万</div>
+                    </div>
+                    <div class="level-item level-3">
+                        <div class="level-badge">发展级</div>
+                        <div class="level-range">1000万 - 1亿</div>
+                    </div>
+                    <div class="level-item level-4">
+                        <div class="level-badge">成熟级</div>
+                        <div class="level-range">1亿 - 10亿</div>
+                    </div>
+                    <div class="level-item level-5">
+                        <div class="level-badge">领军级</div>
+                        <div class="level-range">10亿以上</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3>🛡️ 安全保障</h3>
+                <ul class="security-features">
+                    <li>✓ 使用SHA-256加密承诺方案</li>
+                    <li>✓ 具体金额永不传输或存储</li>
+                    <li>✓ 只显示档次比较结果</li>
+                    <li>✓ 双方同时提交，防止作弊</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="main-section">
+            <!-- 步骤指示器 -->
+            <div class="steps">
+                <div class="step active" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-text">选择角色</div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-text">输入流水</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-text">查看结果</div>
+                </div>
+            </div>
+
+            <!-- 场景1: 选择角色 -->
+            <div id="scene-role" class="scene active">
+                <h2>请选择您的角色</h2>
+                <div class="role-selection">
+                    <div class="role-card" onclick="selectRole('create')">
+                        <div class="role-icon">🚀</div>
+                        <h3>发起验证</h3>
+                        <p>创建一个新的验证会话</p>
+                        <button class="btn btn-primary">创建会话</button>
+                    </div>
+                    <div class="role-card" onclick="selectRole('join')">
+                        <div class="role-icon">🤝</div>
+                        <h3>加入验证</h3>
+                        <p>使用会话ID加入已有会话</p>
+                        <button class="btn btn-secondary">加入会话</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 场景2: 创建会话 -->
+            <div id="scene-create" class="scene">
+                <h2>创建新会话</h2>
+                <div class="form-card">
+                    <div class="form-group">
+                        <label>公司名称</label>
+                        <input type="text" id="company-name-create" placeholder="请输入您的公司名称" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>🔒 隐私级别</label>
+                        <div class="privacy-options">
+                            <label class="privacy-option">
+                                <input type="radio" name="privacy-level" value="minimal" />
+                                <div class="privacy-card">
+                                    <div class="privacy-icon">🔐</div>
+                                    <div class="privacy-title">最小披露</div>
+                                    <div class="privacy-desc">只显示"谁更高"，不透露具体档次</div>
+                                </div>
+                            </label>
+                            <label class="privacy-option">
+                                <input type="radio" name="privacy-level" value="detailed" checked />
+                                <div class="privacy-card">
+                                    <div class="privacy-icon">📊</div>
+                                    <div class="privacy-title">显示档次</div>
+                                    <div class="privacy-desc">显示双方的具体档次等级</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary btn-large" onclick="createSession()">创建会话</button>
+                    <button class="btn btn-text" onclick="backToRole()">返回</button>
+                </div>
+            </div>
+
+            <!-- 场景3: 加入会话 -->
+            <div id="scene-join" class="scene">
+                <h2>加入已有会话</h2>
+                <div class="form-card">
+                    <div class="form-group">
+                        <label>会话ID</label>
+                        <input type="text" id="session-id-join" placeholder="请输入对方提供的会话ID" />
+                    </div>
+                    <div class="form-group">
+                        <label>公司名称</label>
+                        <input type="text" id="company-name-join" placeholder="请输入您的公司名称" />
+                    </div>
+                    <button class="btn btn-primary btn-large" onclick="joinSession()">加入会话</button>
+                    <button class="btn btn-text" onclick="backToRole()">返回</button>
+                </div>
+            </div>
+
+            <!-- 场景4: 等待对方 -->
+            <div id="scene-waiting" class="scene">
+                <h2>等待对方加入</h2>
+                <div class="waiting-card">
+                    <div class="spinner"></div>
+                    <p>请将以下会话ID分享给对方：</p>
+                    <div class="session-id-display">
+                        <code id="session-id-display"></code>
+                        <button class="btn btn-icon" onclick="copySessionId()" title="复制">📋</button>
+                    </div>
+                    <p class="hint">对方加入后，双方可以同时提交流水金额</p>
+                </div>
+            </div>
+
+            <!-- 场景5: 输入流水 -->
+            <div id="scene-input" class="scene">
+                <h2>输入年度流水金额</h2>
+                <div class="form-card">
+                    <div class="session-info">
+                        <p><strong>会话ID:</strong> <span id="current-session-id"></span></p>
+                        <p><strong>参与公司:</strong> <span id="participants"></span></p>
+                        <p><strong>隐私级别:</strong> <span id="privacy-level-display"></span></p>
+                    </div>
+                    
+                    <!-- 文件上传区域 -->
+                    <div class="form-group">
+                        <label>📄 银行流水文件 *</label>
+                        <div class="file-upload-area" id="bank-upload-area">
+                            <input type="file" id="bank-file" accept=".pdf,.png,.jpg,.jpeg" style="display: none;" onchange="handleFileSelect('bank')" />
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('bank-file').click()">
+                                📎 选择文件
+                            </button>
+                            <span id="bank-file-name" class="file-name">未选择文件</span>
+                        </div>
+                        <p class="hint">支持 PDF、PNG、JPG 格式，最大 10MB</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📝 流水真实性承诺书 *</label>
+                        <div class="file-upload-area" id="commitment-upload-area">
+                            <input type="file" id="commitment-file" accept=".pdf,.png,.jpg,.jpeg" style="display: none;" onchange="handleFileSelect('commitment')" />
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('commitment-file').click()">
+                                📎 选择文件
+                            </button>
+                            <span id="commitment-file-name" class="file-name">未选择文件</span>
+                        </div>
+                        <p class="hint">承诺所上传流水真实有效，如有虚假愿承担法律责任</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>年度流水金额（元）*</label>
+                        <input type="number" id="amount-input" placeholder="请输入您公司的年度流水金额" min="100000" />
+                        <p class="hint">💡 金额需与上传的银行流水一致</p>
+                    </div>
+
+                    <div id="upload-status" class="upload-status" style="display: none;">
+                        <div class="upload-progress">
+                            <div class="progress-bar" id="progress-bar"></div>
+                        </div>
+                        <p id="upload-message"></p>
+                    </div>
+
+                    <div class="commitment-status">
+                        <div class="status-item">
+                            <span class="status-label">您的状态:</span>
+                            <span class="status-badge pending" id="my-status">未提交</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">对方状态:</span>
+                            <span class="status-badge pending" id="other-status">未提交</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-large" onclick="submitAmount()" id="submit-btn">
+                        🔒 加密并提交
+                    </button>
+                    <p class="hint">双方都提交后，才能查看比较结果</p>
+                    <button class="btn btn-text" onclick="confirmStartOver()" style="margin-top: 10px;">
+                        🔄 取消并重新开始
+                    </button>
+                </div>
+            </div>
+
+            <!-- 场景6: 结果展示 -->
+            <div id="scene-result" class="scene">
+                <h2>验证结果</h2>
+                <div class="result-card">
+                    <div class="result-icon" id="result-icon">🎉</div>
+                    <h3 id="result-message"></h3>
+                    
+                    <div class="companies-comparison">
+                        <div class="company-result">
+                            <h4 id="company-a-name"></h4>
+                            <div class="level-badge-large" id="company-a-level"></div>
+                            <p id="company-a-desc"></p>
+                        </div>
+                        <div class="vs">VS</div>
+                        <div class="company-result">
+                            <h4 id="company-b-name"></h4>
+                            <div class="level-badge-large" id="company-b-level"></div>
+                            <p id="company-b-desc"></p>
+                        </div>
+                    </div>
+
+                    <div class="security-notice">
+                        <p>🔐 整个过程中，双方的具体流水金额始终保密</p>
+                        <p>只有档次等级信息被用于比较</p>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="startOver()">开始新的验证</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2025 Risk Orchestrator | 企业合作风险与信任评估系统 | 基于安全多方计算技术</p>
+        </footer>
+    </div>
+
+    <!-- 通知提示 -->
+    <div id="toast" class="toast"></div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
+

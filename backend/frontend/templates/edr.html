@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDR 企业风险画像分析 - Risk Orchestrator</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/edr.css">
+    <!-- PDF 导出库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📡 EDR 企业风险画像分析</h1>
+            <p class="subtitle">基于公开信息的深度研究 - 使用 AI 智能分析企业风险</p>
+            <a href="/" class="header-link">← 返回首页</a>
+        </header>
+
+        <div class="main-section">
+            <!-- 搜索区域 -->
+            <div id="search-section" class="search-section">
+                <div class="search-card">
+                    <h2>🔍 输入要分析的企业</h2>
+                    <div class="search-form">
+                        <input 
+                            type="text" 
+                            id="company-input" 
+                            placeholder="请输入企业名称，如：华为技术有限公司" 
+                            class="search-input"
+                        />
+                        <button class="btn btn-primary btn-large" onclick="startAnalysis()">
+                            🚀 开始分析
+                        </button>
+                    </div>
+                    <p class="hint">分析过程约需 30-60 秒，请耐心等待</p>
+                </div>
+            </div>
+
+            <!-- 分析进度 -->
+            <div id="progress-section" class="progress-section" style="display: none;">
+                <div class="progress-card">
+                    <h2>⏳ 正在分析 <span id="analyzing-company"></span></h2>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="progress-bar"></div>
+                        </div>
+                        <span class="progress-text" id="progress-text">0%</span>
+                    </div>
+                    <p class="progress-stage" id="progress-stage">初始化...</p>
+                    <div class="progress-steps">
+                        <div class="progress-step" id="step-info">
+                            <div class="step-icon">📋</div>
+                            <div class="step-label">基础信息</div>
+                        </div>
+                        <div class="progress-step" id="step-news">
+                            <div class="step-icon">📰</div>
+                            <div class="step-label">新闻动态</div>
+                        </div>
+                        <div class="progress-step" id="step-reputation">
+                            <div class="step-icon">⭐</div>
+                            <div class="step-label">口碑评价</div>
+                        </div>
+                        <div class="progress-step" id="step-analysis">
+                            <div class="step-icon">🤖</div>
+                            <div class="step-label">AI分析</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分析结果 -->
+            <div id="result-section" class="result-section" style="display: none;">
+                <div class="result-header">
+                    <h2>📊 <span id="result-company-name"></span> 风险分析报告</h2>
+                    <div class="result-meta">
+                        <span id="result-time"></span>
+                        <span id="result-sources"></span>
+                        <span id="result-cache-status" class="cache-badge"></span>
+                    </div>
+                </div>
+
+                <!-- 风险评分卡片 -->
+                <div class="score-card">
+                    <div class="score-circle" id="score-circle">
+                        <div class="score-value" id="score-value">--</div>
+                        <div class="score-label">综合评分</div>
+                    </div>
+                    <div class="risk-level" id="risk-level">
+                        <span class="risk-badge">--</span>
+                    </div>
+                </div>
+
+                <!-- 详细分析报告 -->
+                <div class="analysis-content">
+                    <h3>📝 详细分析报告</h3>
+                    <div class="analysis-report" id="analysis-text">
+                        <!-- 分析结果将在这里显示 -->
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="result-actions">
+                    <button class="btn btn-primary" onclick="newAnalysis()">
+                        🔍 分析其他企业
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportPDF()">
+                        📄 导出 PDF
+                    </button>
+                    <button class="btn btn-outline" id="refresh-btn" onclick="refreshAnalysis()" style="display: none;">
+                        🔄 重新分析
+                    </button>
+                </div>
+            </div>
+
+            <!-- 错误提示 -->
+            <div id="error-section" class="error-section" style="display: none;">
+                <div class="error-card">
+                    <div class="error-icon">❌</div>
+                    <h3>分析失败</h3>
+                    <p id="error-message"></p>
+                    <button class="btn btn-primary" onclick="newAnalysis()">重新尝试</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2025 Risk Orchestrator | EDR 公开信息分析模块 | Powered by DeepSeek AI</p>
+        </footer>
+    </div>
+
+    <!-- 通知提示 -->
+    <div id="toast" class="toast"></div>
+
+    <script src="/static/edr.js"></script>
+</body>
+</html>
+

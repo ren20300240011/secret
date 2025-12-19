@@ -1,0 +1,27 @@
+# Risk Orchestrator - Backend Dependencies
+
+# Web Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# CORS
+python-multipart>=0.0.6
+
+# File handling
+werkzeug>=3.0.0
+
+# Data validation
+pydantic>=2.5.0
+
+# Async support
+aiofiles>=23.2.0
+
+# HTTP client
+httpx>=0.25.0
+
+# Search API
+tavily-python>=0.3.0
+
+# Development
+python-dotenv>=1.0.0
+
